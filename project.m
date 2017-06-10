@@ -267,7 +267,7 @@ end
 % rispettivi valori dei criteri informativi di Akaike e Bayesiano, posso
 % concludere la miglior specificazione disponibile per per il processo
 % stocastico generatore della serie delle differenze prime.
-% La specificazione trovata è un modello ARIMA(4,1,0), dove i coefficienti
+% La specificazione trovata è un modello ARIMA(0,1,4), dove i coefficienti
 % intermedi 1 e 2 sono uguali a zero.
 
 
@@ -277,7 +277,7 @@ end
 % Si procede valutando la qualità del modello scelto, analizando la
 % distribuzione dei residui della regressione.
 
-res = infer(AR4EstMdl,ly);
+res = infer(MA4EstMdl,ly);
 sy = (dy-res(2:end));
 figure
 h1 = gca;
@@ -292,7 +292,7 @@ title('Differenza tra valori osservati e stimati')
 hold off
 
 figure
-plot(res./sqrt(AR4EstMdl.Variance))        % plot dei residui standardizzati
+plot(res./sqrt(MA4EstMdl.Variance))        % plot dei residui standardizzati
 h1 = gca;
 h1.XLim = [0,T];
 h1.XTick = [1 251 501 753 1004];
@@ -305,7 +305,7 @@ title('Residui standardizzati')
 % effettivamente il modello spiega è piuttosto bassa: la conclusione è che
 % il nostro modello riesca a stimare in modo consistente i parametri che
 % influenzano la serie ma che la spiegazione della maggior parte dei suoi
-% rendimenti si dovrebbe ricercare in variabili esogene o elementi
+% movimenti si dovrebbe ricercare in variabili esogene o elementi
 % particolari che caratterizzano l'origine della serie.
 
 figure
@@ -321,7 +321,7 @@ parcorr(res)
 
 %%
 % Come la distribuzione dei valori osservati anche la distribuzione dei
-% residui standardizzati è leptocurtica e asimmetrica verso sinistra e la
+% residui standardizzati è leptocurtica, asimmetrica verso sinistra e la
 % maggior parte delle osservazioni sono concentrate intorno alla media. 
 % L'analisi è confermata anche in questo caso dal qq-plot, dove si
 % nota la presenza di asimmetria a sinistra e la conferma dell'ipotesi 
@@ -341,7 +341,7 @@ table(K(2:end),h',p',Qstat',crit','VariableNames',names)        % creazione tabe
 % autocorrelazioni dei residui (colonna H) e non possiamo quindi rifiutare
 % l'ipotesi nulla che esse siano tutte congiuntamente nulle.
 %%
-% L'esito di questa analisi indica che il nostro modello ARIMA(4,1,0) è
+% L'esito di questa analisi indica che il nostro modello ARIMA(0,1,4) è
 % adatto a stimare un modello per l'indice NDX100 dal 1 Maggio 2012 al 28
 % Aprile 2017.
 
@@ -415,7 +415,7 @@ end
 
 
 %% 9) Selezione e stima modello GARCH
-% Date le informazioni riportate dai test precedenti, in questa sezione ci
+% Date le informazioni riportate dai test precedenti, in questa sezione si
 % tenta di trovare un modello per scrivere l'andamento eteroschedastico
 % della varianza condizionale. Al fine di trovare un modello
 % sufficientemente buono sono stati stimati diversi modelli ARCH, GARCH ed
@@ -428,18 +428,20 @@ VarMdl = estimate(Mdl,res);
 %%
 % Entrambi i coefficienti del modello sono significativamente diversi da
 % zero. Si prosegue con l'analisi dei residui standardizzati tramite la
-% varianza condizionata generata dal modello GARCH(1,1):
+% varianza condizionata generata dal modello GARCH(1,1). Sia il test di 
+% Ljung-Box che il test di Engle sono stati eseguiti da 1 a 10 ritardi,
+% ottendendo lo stesso risultato finale:
 
 cv = infer(VarMdl,res);     % generazione della varianza condizionata
 stres = (res./sqrt(cv));    % standardizzazione dei residui
-[h,p,Qstat,crit] = lbqtest(cv.^2,'lags',2);
+[h,p,Qstat,crit] = lbqtest(cv.^2,'lags',10);
 table(h,Qstat,crit,p,'rownames',{'lbqtest'})
 if h == 1
     fprintf('Rifiuto l''ipotesi nulla');
 else
     fprintf('Non rifiuto l''ipotesi nulla');
 end
-[h,p] = archtest(cv,'lags',2);         %Test di Engle
+[h,p] = archtest(cv,'lags',10);         %Test di Engle
 table(h,p,'rownames',{'Archtest'})
 if h == 1
     fprintf('Rifiuto l''ipotesi nulla');
@@ -452,7 +454,7 @@ end
 % Tutti i modelli ARCH, GARCH ed EGARCH, con tutti i diversi ritardi
 % selezionati, rifiutano i testi di Ljung-Box ed Engle. Il modello
 % GARCH(1,1) è stato quindi selezionato perché migliore di tutti i modelli
-% ARCH e perché il più parsimonioso tra i modelli GARCH.
+% ARCH, più parsimonioso tra i modelli GARCH e perché presentava correlogrammi migliori rispetto al rispettivo modello EGARCH.
 
 figure;
 subplot(2,1,1)
@@ -479,7 +481,7 @@ h1 = gca;
 h1.XLim = [0,T];
 h1.XTick = [1 251 501 753 1004];
 hold on
-plot(res./sqrt(AR4EstMdl.Variance))
+plot(res./sqrt(MA4EstMdl.Variance))
 plot(stres,'r');
 hold off
 title('Residui standardizzati con varianza GARCH su residui standardizzati con varianza costante');
@@ -513,7 +515,7 @@ title('Scatter plot residui standardizzati e residui originali')
 % osservazioni fino a 30 giorni dall'ultima misurazione, il secondo
 % contenente le ultime 30 osservazioni al fine di testare la previsione.
 
-[yf, vf] = forecast(AR4EstMdl,30,'Y0',ly(1:1227));         % valore atteso condizionato
+[yf, vf] = forecast(MA4EstMdl,30,'Y0',ly(1:1227));         % valore atteso condizionato
 
 figure
 h1 = gca;
@@ -554,31 +556,60 @@ legend('Varianza condizionata','Previsione');
 title('Simulazione previsione varianza condizionata GARCH(1,1) per 30 periodi');
 
 %%
-%
-%
-%
-%
-%
+% Il grafico della previsione della varianza condizionata mostra la
+% relativa utilità del modello per descriverne gli effetti: i coefficienti
+% contenuti ne causano una veloce convergenza della previsione futura verso
+% il valore atteso, convergenza ingiustificata a confronto con le ampie
+% oscillazioni della varianza mostrate dal grafico.
 
-Mdl = arima('ArLags',[3 4],'D',1,'MaLags',[]);  % simulazione rendimenti con varianza EGARCH
+Mdl = arima('ArLags',[],'D',1,'MaLags',[3 4]);  % simulazione rendimenti con varianza EGARCH
 EstMdl2 = estimate(Mdl,dy);
-yf2 = forecast(EstMdl2,100,'Y0',dy(1:1177));
-cvf2 = forecast(VarMdl,100,'Y0',res(1:1177));
+yf2 = forecast(EstMdl2,100,'Y0',dy(1:1157));
+cvf2 = forecast(VarMdl,100,'Y0',res(1:1157));
 figure
 h1 = gca;
 h1.XLim = [0,T];
-h1.XTick = [1 263 521 773 1024];
+h1.XTick = [1 251 501 753 1004];
 h1.XTickLabel = {'Giu 2011','Giu 2012','Giu 2013','Giu 2014','Giu 2015'};
 hold on
 h2 = plot(dy,'Color',[.7,.7,.7]);
-h3 = plot(1178:1277,yf2,'b','LineWidth',2);
-h4 = plot(1178:1277,yf2 + 1.96*sqrt(cvf2),'r:','LineWidth',2);
-plot(1178:1277,yf2 - 1.96*sqrt(cvf2),'r:','LineWidth',2);
+h3 = plot(1158:1257,yf2,'b','LineWidth',2);
+h4 = plot(1158:1257,yf2 + 1.96*sqrt(cvf2),'r:','LineWidth',2);
+plot(1158:1257,yf2 - 1.96*sqrt(cvf2),'r:','LineWidth',2);
 legend([h2 h3 h4],'Valori osservati','Previsione','Intervalli di confidenza al 95%');
 title('Simulazione previsione RENDIMENTI per 100 periodi e intervalli di confidenza al 95%')
 hold off
 
+%%
+% Nel terzo grafico struttiamo le informazioni di entrambi i modelli per 
+% stimare una previsione del valore atteso futuro dei rendimenti dell'indice,
+% con degli intervalli di confidenza corretti per la varianza condizionata 
+% prevista. Il risultato è che anche la previsione dei rendimenti converge 
+% quasi subito al suo valore atteso. Come si può notare, inoltre,
+% l'intervallo di confidenza risulta comunque relativamente ridotto
+% rispetto le oscillazioni precedenti.
+
 %% 11) Conclusioni
+% L'analisi effettuata sull'indice NDX100 ci permette di trarre alcune
+% conclusioni:
+% 
+% * Il modello, escludendo i primi due ritardi, può essere descritto da un
+% processo ARIMA(0,1,4), contenente due soli ritardi. Questa ipotesi è
+% confermata empiricamente grazie alla previsione sulla serie ma può essere
+% poco realistica considerata la teoria dei mercati finanziari.
+% * Questa relativamente semplice modellizzazione della serie storica può
+% essere indotta dal fatto che negli ultimi 5 anni il trend del mercato sia
+% stato crescente senza troppo grandi oscillazioni e bolle speculative.
+% * L'effetto dell'eteroschedasticità condizionale autoregressiva non può
+% essere considerata la causa principale dell'eteroschedasticità presente
+% nella serie storica, i modelli ARCH/GARCH/EGARCH risultano quindi
+% relativamente inefficaci nella previsione e poco esplicativi riguardo il
+% fenomeno descritto.
+% * Entrambe le considerazioni finali possono essere indotte dal fatto che
+% le principali variazioni della serie siano causate da fattori esterni al
+% mercato analizzato, quindi esogene alla nostra analisi.
+% 
+
 
 close all
 
