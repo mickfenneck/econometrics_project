@@ -61,17 +61,16 @@ title('Media mobile a 30 giorni indice NDX100');
 % utilizato per l'analisi degli investimenti borsistici. La media mobile è
 % calcolata sommando i rispettivi ritardi delle osservazioni, nel nostro
 % caso 30 (60 e 120), e dividendo la sommatoria per il numero delle osservazioni. In
-% questo modo, di giorno in giorno, i valori superiori a 30 (60 o 120) vengono
+% questo modo, di giorno in giorno, i valori superiori a 30 vengono
 % sostituiti dalle nuove misurazioni, indicando un andamento della serie.
 % 
 % L'indicatore di media mobile viene utilizzato nell'ambito dell'analisi tecnica per evidenziare le tendenze sottostanti l'andamento dei prezzi eliminando l'effetto di fluttuazioni minori (transitorie).
 % Le medie mobili possono essere calcolate con diverse metodologie. Le principali metodologie di calcolo sono le seguenti: medie mobili aritmetiche, medie mobili esponenziali e medie mobili ponderate.
-% Eventuali cambiamenti di direzione della media mobile, oppure un incrocio
+% Eventuali cambiamenti di direzi%one della media mobile, oppure un incrocio
 % tra la media mobile e la serie dei prezzi possono rappresentare segnali
 % di acquisto o vendita, mentre la media mobile in sè rappresenta spesso un
 % supporto o una resistenza. Fonte
 % (http://www.borsaitaliana.it/bitApp/glossary.bit?target=GlossaryDetail&word=Media%20Mobile).
-%
 % Questa prima analisi grafica permette di rilevare la mancanza di
 % stazionarietà in senso debole della serie, in quanto la media presenta
 % picchi anche distanti tra loro e la varianza si presenta contenuta in
@@ -249,7 +248,7 @@ Mdl = arima('ArLags',[],'D',1,'MaLags',[3 4]);
 
 
 [AR4aic,AR4bic]=aicbic(AR4logL,2,T);        % calcolo AIC BIC ARIMA(4,1,0)
-[MA4aic,MA4bic]=aicbic(MA4logL,2,T);        % calcolo AIC BIC ARIMA(0,1,4)
+[MA4aic,MA4bic]=aicbic(MA4logL,4,T);        % calcolo AIC BIC ARIMA(0,1,4)
 
 table(AR4aic,AR4bic,MA4aic,MA4bic)
 
