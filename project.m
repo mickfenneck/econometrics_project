@@ -10,6 +10,7 @@
 % influenze delle componenti maggiori. Non comprende società finanziarie, e
 % include alcune società estere. Questi due fattori lo differenziano
 % dall'indice S&P 500. (Fonte: https://it.wikipedia.org/wiki/NASDAQ-100)
+%
 % La serie analizzata contiene dati a frequenza giornaliera degli ultimi 5 anni: dal 1 Maggio
 % 2012 al 28 Marzo 2017 è presente un totale di 1257 osservazioni.
 % L'indice è quotato 5 giorni a settimana, dal lunedì al venerdì.
@@ -51,14 +52,14 @@ h1.XLim = [0,T];
 h1.XTick = [1 251 501 753 1004];
 h1.XTickLabel = {'Mag 2012','Mag 2013','Mag 2014','Mag 2015', 'Mag 2016'};
 legend('Valori osservati','Media Mobile 30 Giorni','Media Mobile 60 Giorni','Media Mobile 120 Giorni')
-title('Media mobile a 30 giorni indice NDX100');
+title('Media Mobile 30, 60, 120 Giorni indice NDX100');
 
 %% 
 % I primi due grafici illustrano rispettivamente l'andamento della serie
 % storica dell'indice NDX100 e della sua rispettiva trasformata
 % logaritmica. Il terzo grafico è utilizzato per indicare l'andamento della
 % media mobile a trenta, sessanta e 120 giorni della trasformata logaritmica, strumento
-% utilizato per l'analisi degli investimenti borsistici. La media mobile è
+% utilizzato per l'analisi degli investimenti borsistici. La media mobile è
 % calcolata sommando i rispettivi ritardi delle osservazioni, nel nostro
 % caso 30 (60 e 120), e dividendo la sommatoria per il numero delle osservazioni. In
 % questo modo, di giorno in giorno, i valori superiori a 30 (60 o 120) vengono
@@ -68,7 +69,7 @@ title('Media mobile a 30 giorni indice NDX100');
 % Le medie mobili possono essere calcolate con diverse metodologie. Le principali metodologie di calcolo sono le seguenti: medie mobili aritmetiche, medie mobili esponenziali e medie mobili ponderate.
 % Eventuali cambiamenti di direzione della media mobile, oppure un incrocio
 % tra la media mobile e la serie dei prezzi possono rappresentare segnali
-% di acquisto o vendita, mentre la media mobile in sè rappresenta spesso un
+% di acquisto o vendita, mentre la media mobile in sé rappresenta spesso un
 % supporto o una resistenza. Fonte
 % (http://www.borsaitaliana.it/bitApp/glossary.bit?target=GlossaryDetail&word=Media%20Mobile).
 %
@@ -200,7 +201,7 @@ qqplot(dy)
 % * ACF: funzione di autocorrelazione
 % * PACF: funzione di autocorrelazione parziale.
 % 
-% I correlogrammi empirici presentanto una prima analisi grafica della
+% I correlogrammi empirici presentano una prima analisi grafica della
 % relazione tra la serie e le osservazioni.
 
 
@@ -229,8 +230,8 @@ parcorr(dy)                     % plot correlogramma PACF
 % specificazione che meglio possa descrivere il processo stocastico
 % generatore della serie storica è stato utilizzato un metodo "trial and
 % error".
-% Per motivi di spazio e chiarezza si allega il procedimento contenente i
-% confronti tra le differenti serie analizzate a fine analisi.
+% Per motivi di spazio e chiarezza non si inserisce l'analisi preliminare
+% contenente i confronti tra le differenti serie analizzate.
 % I risultati più soddisfacenti si trovano per i modelli ARIMA(4,1,0) e
 % ARIMA(0,1,4), ottenuti includendo unicamente il terzo ed il quarto
 % ritardo, in quanto i precedenti possono essere considerati non significativamente
@@ -274,7 +275,7 @@ end
 
 
 %% 7) Analisi dei residui
-% Si procede valutando la qualità del modello scelto, analizando la
+% Si procede valutando la qualità del modello scelto, analizzando la
 % distribuzione dei residui della regressione.
 
 res = infer(MA4EstMdl,ly);
@@ -327,14 +328,14 @@ parcorr(res)
 % nota la presenza di asimmetria a sinistra e la conferma dell'ipotesi 
 % delle code più pesanti.
 %%
-% Si procede quindi a confermare questa ipotesi con il test di Jung-Box:
+% Si procede quindi a confermare questa ipotesi con il test di Ljung-Box:
 
 [h,p,Qstat,crit] = lbqtest(res,'lags',[1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]);
 names = {'K';'H';'pvalue';'Qstat';'Crit'};
 table(K(2:end),h',p',Qstat',crit','VariableNames',names)        % creazione tabella ouput
 
 %%
-% Il test di Jung-Box verifica l'ipotesi nulla di congiunta uguaglianza a
+% Il test di Ljung-Box verifica l'ipotesi nulla di congiunta uguaglianza a
 % zero delle prime K autocorrelazioni dei residui. Nella tabella precedente
 % è illustrato l'output del test per le prime 20 statistiche calcolate su
 % tale ipotesi. Come si nota l'esito è "False" per tutte le prime 20
@@ -581,7 +582,7 @@ title('Simulazione previsione RENDIMENTI per 100 periodi e intervalli di confide
 hold off
 
 %%
-% Nel terzo grafico struttiamo le informazioni di entrambi i modelli per 
+% Nel terzo grafico sfruttiamo le informazioni di entrambi i modelli per 
 % stimare una previsione del valore atteso futuro dei rendimenti dell'indice,
 % con degli intervalli di confidenza corretti per la varianza condizionata 
 % prevista. Il risultato è che anche la previsione dei rendimenti converge 
